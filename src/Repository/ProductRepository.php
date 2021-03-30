@@ -21,7 +21,7 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-//INNER JOIN groupes g ON g.id = c.id
+
     public function findFilters($categoryId){
 
             $qb = $this->createQueryBuilder('p')
@@ -31,6 +31,24 @@ class ProductRepository extends ServiceEntityRepository
 
 //dump($qb->getQuery()->getResult());
             return $qb->getQuery()->getResult();
+
+    }
+
+
+
+    public function findByColors($tableColorIds){
+
+
+        $qb = $this->createQueryBuilder('p')
+            ->innerJoin('p.color', 'pc');
+
+            if(!empty($tableColorIds)){
+                $qb ->andWhere('pc IN (:tableColorIds)')
+                    ->setParameter('tableColorIds', $tableColorIds );
+            }
+
+//dump($qb->getQuery()->getResult());
+        return $qb->getQuery()->getResult();
 
     }
 
@@ -83,10 +101,10 @@ class ProductRepository extends ServiceEntityRepository
 
 
         $qb = $this->createQueryBuilder('p')
-            ->addSelect('AVG(pc.note)')
+           // ->addSelect('AVG(pc.note)')
             ->innerJoin('p.comments', 'pc')
-            ->orderBy('SUM(pc.note)', 'DESC')
-            ->groupBy('p')
+            ->orderBy('AVG(pc.note)', 'DESC')
+            ->groupBy('p.id')
             ->setMaxResults(4);
             //->andWhere('pc = c');
            // ->setParameter('product', $product);
@@ -96,6 +114,60 @@ class ProductRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
 
     }
+
+
+    public function dateLastProduct(){
+
+        $qb = $this->createQueryBuilder('p')
+            // select * from product orderby
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults(1)
+            ->setFirstResult(0);
+
+        //dump($qb->getQuery()->getResult());
+        return $qb->getQuery()->getResult();
+    }
+
+
+
+
+    public function selectColorsProduct(){
+
+        $qb = $this->createQueryBuilder('p')
+            ->innerJoin('p.color', 'pco');
+            //->groupBy('p.id');
+
+        //dump($qb->getQuery()->getResult());
+        return $qb->getQuery()->getResult();
+
+    }
+
+
+
+    public function noteProduct($productId) {
+
+
+        $qb = $this->createQueryBuilder('p')
+           // ->from('Product', 'p')
+            ->addSelect('AVG(pc.note)')
+            ->innerJoin('p.comments', 'pc')
+            ->andWhere('p.id = :productId')
+            ->setParameter('productId', $productId )
+            ->groupBy('p.id');
+        //->andWhere('pc = c');
+        // ->setParameter('product', $product);
+        //->andWhere('pc.note IN (5, 4)');
+
+      // dump($qb->getQuery()->getResult());
+        return $qb->getQuery()->getResult();
+
+    }
+
+
+
+
+
+
 
 
     // /**

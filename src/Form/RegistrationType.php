@@ -19,7 +19,7 @@ class RegistrationType extends AbstractType
                     'placeholder' => "Votre email"
                 ]])
 
-            ->add('usename', TextType::class,[
+            ->add('username', TextType::class,[
                 'attr' => [
                 'placeholder' => "Votre nom d'utilisateur"
             ]])
@@ -27,13 +27,14 @@ class RegistrationType extends AbstractType
             ->add('password', PasswordType::class,[
                 'attr' => [
                     'placeholder' => "Votre mot de passe"
-                ]])
-
+                ]]);
+/*
             ->add('confirm_password', PasswordType::class,[
                 'attr' => [
                     'placeholder' => "Veilliez confirmer votre mot de passe"
                 ]])
         ;
+*/
     }
 
     public function configureOptions(OptionsResolver $resolver)

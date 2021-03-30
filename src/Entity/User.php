@@ -3,17 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @UniqueEntity(
- *     fields= {"email"},
- *     message="l'email que vous avez indiqué est déjà utilisé !"
- * )
  */
 class User implements UserInterface
 {
@@ -24,28 +20,37 @@ class User implements UserInterface
      */
     private $id;
 
+
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\Email()
+     * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="json")
      */
-    private $usename;
+    private $roles = [];
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\Length(min="8", minMessage="Votre mot de passe doit faire minimum 8 caractères")
+     * @var string The hashed password
+     * @ORM\Column(type="string")
      */
     private $password;
 
     /**
-     * @var
-     * @Assert\EqualTo(propertyPath="password", message="Vous n'avez pas tapé le meme mot de passe")
+     * @ORM\Column(type="string", length=255)
      */
-    public $confirm_password;
+    private $username;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="user")
+     */
+    private $comments;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -64,21 +69,41 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getUsename(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
     {
-        return $this->usename;
+        return (string) $this->email;
     }
 
-    public function setUsename(string $usename): self
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        $this->usename = $usename;
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
 
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * @see UserInterface
+     */
+    public function getPassword(): string
     {
-        return $this->password;
+        return (string) $this->password;
     }
 
     public function setPassword(string $password): self
@@ -88,24 +113,57 @@ class User implements UserInterface
         return $this;
     }
 
-    public function eraseCredentials()
-    {
-        // TODO: Implement eraseCredentials() method.
-    }
-
+    /**
+     * @see UserInterface
+     */
     public function getSalt()
     {
-        // TODO: Implement getSalt() method.
+        // not needed when using the "bcrypt" algorithm in security.yaml
     }
 
-    public function getRoles()
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
     {
-        // TODO: Implement getRoles() method.
-        return ['ROLE_USER'];
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
-    public function getUsername(): string
+    public function setUsername(string $username): self
     {
-        // TODO: Implement getUsername() method.
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Comment[]
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): self
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getUser() === $this) {
+                $comment->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

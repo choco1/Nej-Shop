@@ -6,17 +6,52 @@ use App\Entity\Category;
 use App\Entity\Color;
 use App\Entity\Comment;
 use App\Entity\Product;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Faker;
 
 class AppFixtures extends Fixture
 {
+
+    private $passwordEncoder;
+
+
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $this->passwordEncoder = $passwordEncoder;
+    }
+
+
+
     public function load(ObjectManager $manager)
     {
         // $product = new Product();
         // $manager->persist($product);
     $faker = Faker\Factory::create("fr_FR");
+
+        $user = new User();
+        $user->setEmail('najwa.ciesielczyk@gmail.com');
+        $user->setPassword($this->passwordEncoder->encodePassword($user, 'najwa1234'));
+        $user->setUsername('Nej');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->addReference('user-0', $user);
+        $manager->persist($user);
+
+
+
+        for($i = 1; $i < 30; $i++){
+            $user = new User();
+            $user->setEmail($faker->email);
+            $user->setPassword($this->passwordEncoder->encodePassword($user, '12345678'));
+            $user->setUsername($faker->userName);
+            $user->setRoles(['ROLE_USER']);
+            $this->addReference('user-'.$i, $user);
+            $manager->persist($user);
+        }
+
+
 
     for($i = 0; $i < 8; $i++){
         $comment = new Comment();
@@ -50,6 +85,7 @@ class AppFixtures extends Fixture
                 $product->setImage("https://picsum.photos/600/400");//$faker->imageUrl(600,400)
                 $product->setName($faker->name);
                 $product->setCategory($this->getReference('category-'.rand(0, 4)));
+
                 for($j = 0; $j < 3; $j++){
                  $product->addColor($this->getReference('couleur-'.rand(0, 6)));
                 }

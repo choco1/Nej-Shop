@@ -52,9 +52,11 @@
                                 <label for="colors">Couleur</label>
                                 <select class="custom-select" id="colors">
                                     <option selected>Choisir</option>
-                                    <option value="1">Bleu</option>
-                                    <option value="2">Rouge</option>
-                                    <option value="3">Vert</option>
+
+
+                                    {% for product in product.color %}
+                                        <option value="{{ product.id }}">{{ product.nameOfCalor }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="form-group">
@@ -85,13 +87,26 @@
                             </ul>
                         </div>
                         <div class="reviews_product p-3 mb-2 ">
-                            3 avis
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            (4/5)
+
+                           <span class="mr-2"> ({{ noteProducts }}/5) </span>
+                            {% if  noteProducts  == 5 %}
+                                {% for i in 0.. ( noteProducts  -1 )%}
+                                        <i class="fa fa-star ml-1 "></i>
+                                {% endfor %}
+                            {% elseif noteProducts  < 5 %}
+                                {% for i in 0.. ( noteProducts  -1 )%}
+                                    <i class="fa fa-star ml-1 "></i>
+                                {% endfor %}
+                                {% for n in 0.. (4 - noteProducts) %}
+                                    <i class="far fa-star ml-1"></i>
+                                {% endfor %}
+                            {% else %}
+                                {% for j in 0 .. 4 %}
+                                    <i class="far fa-star ml-1"></i>
+                                {% endfor %}
+                            {% endif %}
+
+
                             <a class="pull-right" href="#reviews">Voir tous les avis</a>
                         </div>
                         <div class="datasheet p-3 mb-2 bg-info text-white">
@@ -139,27 +154,18 @@
 
 
                         <form action="" method="post">
-                            <div class="form-group">
-                                <label for="name">Nom</label>
-                                <input type="text" name="name" class="form-control" id="name">
-                            </div>
-                            <div class="form-group">
-                                <label for="note">Note</label>
-                                <select name="note" class="form-control" id="note">
-                                    <option value="0">0</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="message">Message</label>
-                                <textarea name="message" id="message" class="form-control"></textarea>
-                            </div>
+
+                            {{ form_start(commentForm) }}
+                            {{ form_row(commentForm.name) }}
+                            {{ form_row(commentForm.note) }}
+                            {{ form_row(commentForm.message) }}
+
 
                             <button class="btn btn-primary">Envoyer</button>
+
+                            {{ form_end(commentForm) }}
+
+
                         </form>
                     </div>
                 </div>
